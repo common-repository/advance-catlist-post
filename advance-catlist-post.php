@@ -3,7 +3,7 @@
 Plugin Name: Advance Catlist Post
 Plugin URI: https://biharinfozone.in/advance-catlist-post
 Description: A customizable plugin that displays posts from a user-defined category with options for date modification and the number of posts. If no category is provided, shows the latest posts. Elementor compatible.
-Version: 1.4
+Version: 1.6
 Author: Pawan Jagriti
 Author URI: https://biharinfozone.in/author/pawanjagriti
 License: GPLv2 or later
@@ -36,6 +36,8 @@ add_action('wp_enqueue_scripts', 'advance_catlist_post_enqueue_styles');
 function advance_catlist_post_shortcode($atts) {
     $default_number_of_posts = get_option('default_number_of_posts', 5);
     $show_date = get_option('show_date', 'no'); // Get the setting for showing date
+    $show_new_gif = get_option('show_new_gif', 'no');
+    $new_gif_post_count = get_option('new_gif_post_count', 3); // Default number of posts for New GIF
 
     $atts = shortcode_atts(array(
         'name' => '',
@@ -53,24 +55,36 @@ function advance_catlist_post_shortcode($atts) {
     }
 
     $query = new WP_Query($args);
-
     $output = '<ul class="advance-catlist-posts">';
+
     if ($query->have_posts()) {
+        $post_count = 0; // Counter to display "New" GIF for top posts
+
         while ($query->have_posts()) {
             $query->the_post();
+            $post_count++; // Increment counter per post
+
             $output .= '<li><a href="' . esc_url(get_permalink()) . '">' . esc_html(get_the_title()) . '</a>';
-            // Show the published date if the setting is enabled
+
+            // Show "New" GIF for top posts as per the setting
+            if ($show_new_gif === 'yes' && $post_count <= $new_gif_post_count) {
+                $output .= ' <img src="' . plugin_dir_url(__FILE__) . 'assets/images/new.webp" alt="New" class="new-gif" style="width: 20px; height: auto; vertical-align: middle; mix-blend-mode: multiply;"/>';
+            }
+
+            // Show published or modified date as per settings
             if (strtolower($show_date) === 'yes') {
-                $output .= '<span class="' . esc_attr($atts['date_class']) . '"> - ' . esc_html(get_the_date()) . '</span>'; // Display published date
+                $output .= '<span class="' . esc_attr($atts['date_class']) . '"> - ' . esc_html(get_the_date()) . '</span>';
             }
             if (strtolower(sanitize_text_field($atts['date_modified'])) === 'yes') {
                 $output .= '<span class="' . esc_attr($atts['date_class']) . '"> - ' . esc_html(get_the_modified_date()) . '</span>';
             }
+
             $output .= '</li>';
         }
     } else {
         $output .= '<li>' . esc_html__('No posts found', 'advance-catlist-post') . '</li>';
     }
+
     $output .= '</ul>';
 
     wp_reset_postdata();
@@ -180,6 +194,7 @@ function advance_catlist_post_register_settings() {
     register_setting('advance_catlist_post_settings_group', 'default_category');
     register_setting('advance_catlist_post_settings_group', 'default_number_of_posts');
     register_setting('advance_catlist_post_settings_group', 'show_date'); // New setting for showing date
+    register_setting('advance_catlist_post_settings_group', 'show_new_gif');
 }
 add_action('admin_init', 'advance_catlist_post_register_settings');
 
@@ -214,6 +229,24 @@ function advance_catlist_post_settings_init() {
         'advance_catlist_post',
         'advance_catlist_post_section'
     );
+    
+    add_settings_field(
+        'show_new_gif',
+        esc_html__('Show "New" GIF after Title', 'advance-catlist-post'),
+        'show_new_gif_render',
+        'advance_catlist_post',
+        'advance_catlist_post_section'
+    );
+    
+    
+add_settings_field(
+    'new_gif_post_count',
+    esc_html__('Number of Posts to Show "New" GIF', 'advance-catlist-post'),
+    'new_gif_post_count_render',
+    'advance_catlist_post',
+    'advance_catlist_post_section'
+);
+
 }
 add_action('admin_init', 'advance_catlist_post_settings_init');
 
@@ -241,6 +274,32 @@ function show_date_render() {
     </select>
     <?php
 }
+
+// Render the new "New GIF" setting
+function show_new_gif_render() {
+    $show_new_gif = get_option('show_new_gif', 'no');
+    ?>
+    <select name="show_new_gif">
+        <option value="yes" <?php selected($show_new_gif, 'yes'); ?>><?php esc_html_e('Yes', 'advance-catlist-post'); ?></option>
+        <option value="no" <?php selected($show_new_gif, 'no'); ?>><?php esc_html_e('No', 'advance-catlist-post'); ?></option>
+    </select>
+    <?php
+}
+
+function new_gif_post_count_render() {
+    $new_gif_post_count = get_option('new_gif_post_count', 3);
+    ?>
+    <select name="new_gif_post_count">
+        <option value="1" <?php selected($new_gif_post_count, 1); ?>>1</option>
+        <option value="2" <?php selected($new_gif_post_count, 2); ?>>2</option>
+        <option value="3" <?php selected($new_gif_post_count, 3); ?>>3</option>
+        <option value="5" <?php selected($new_gif_post_count, 5); ?>>5</option>
+        <option value="7" <?php selected($new_gif_post_count, 7); ?>>7</option>
+    </select>
+    <?php
+}
+register_setting('advance_catlist_post_settings_group', 'new_gif_post_count');
+
 
 function advance_catlist_post_section_callback() {
     echo esc_html__('Configure the default settings for the Advance Catlist Post plugin.', 'advance-catlist-post');

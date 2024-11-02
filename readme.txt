@@ -5,7 +5,7 @@ Tags: Advance Catlist Post, category, posts, customizable, Elementor
 Requires at least: 5.2
 Tested up to: 6.6.1
 Requires PHP: 7.0
-Stable tag: /tags/1.4/
+Stable tag: /tags/1.6/
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,16 @@ If no category is specified, the plugin will display the most recent posts based
 ![Plugin Logo](assets/icon-128x128.gif)
 
 == Changelog ==
+= 1.6 =
+* Security Enhancements: Sanitized inputs and outputs, added nonces.
+* Code Optimization: Combined style registration and settings sanitization.
+* Bug Fixes: Corrected default options and error handling.
+
+= 1.5 =
+* Fixes Some Bugs
+* Improve & Added UI Features
+* New Features Added
+
 = 1.4 =
 * Fixes Some Bugs
 * Improve UI
@@ -59,7 +69,6 @@ If no category is specified, the plugin will display the most recent posts based
 * Improved UI: Enhanced the shortcode generation UI for better usability.
 * Admin Notice: Added a dismissible admin notice to encourage users to leave a review for the plugin.
 * Code Optimization: Refactored and cleaned up the code for better readability and maintenance.
-
 
 = 1.2 =
 * Added an option in the settings page to toggle the display of the published date.
